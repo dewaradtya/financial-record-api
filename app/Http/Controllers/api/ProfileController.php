@@ -31,10 +31,12 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
+        $user = Auth::user();
+
         $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string',
-            'email' => 'sometimes|required|string|email',
-            'password' => 'sometimes|required'
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255',
+            'password' => 'nullable|string'
         ]);
 
         if ($validator->fails()) {
@@ -42,31 +44,22 @@ class ProfileController extends Controller
                 'status' => false,
                 'message' => 'Validation error',
                 'data' => $validator->errors()
-            ]);
+            ], 422);
         }
 
-        $user = Auth::user();
+        $user->name = $request->name;
+        $user->email = $request->email;
 
-        Log::info('User: ' . json_encode($user)); // Debugging line
-
-        if ($user) {
-            if ($request->has('name')) $user->name = $request->name;
-            if ($request->has('email')) $user->email = $request->email;
-            if ($request->has('password')) $user->password = bcrypt($request->password);
-
-            $user->save(); // Ensure $user is an instance of User model
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Profile updated successfully',
-                'data' => $user->id
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'User not found',
-                'data' => null
-            ], 404);
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->password);
         }
+
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile updated successfully',
+            'data' => $user
+        ]);
     }
 }

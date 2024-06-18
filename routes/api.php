@@ -12,10 +12,10 @@ Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('profile', [ProfileController::class, 'index']);
-    Route::put('profile', [ProfileController::class, 'update']);
+    Route::post('update', [ProfileController::class, 'update']);
     
     Route::post('transaction', [FinancialRecordController::class, 'store']);
-    Route::put('transaction/{id}', [FinancialRecordController::class, 'update']);
+    Route::post('transaction/{id}', [FinancialRecordController::class, 'update']);
     
     Route::get('users/transactions', [UserController::class, 'list']);
 });

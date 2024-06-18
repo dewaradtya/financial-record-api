@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
-use App\Models\FinancialRecord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\FinancialRecord;
 
 class FinancialRecordController extends Controller
 {
@@ -62,29 +62,36 @@ class FinancialRecordController extends Controller
                 'status' => false,
                 'message' => 'Validation error',
                 'data' => $validator->errors()
-            ]);
+            ], 422);
         }
 
         $user = Auth::user();
-        $transaction = FinancialRecord::where('user_id', $user->id)->findOrFail($id);
+        $transaction = FinancialRecord::where('user_id', $user->id)->find($id);
 
-        if ($transaction) {
-            if ($request->has('type')) $transaction->type = $request->type;
-            if ($request->has('amount')) $transaction->amount = $request->amount;
-            if ($request->has('description')) $transaction->description = $request->description;
-            $transaction->save();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Transaction updated successfully',
-                'data' => $transaction
-            ]);
-        } else {
+        if (!$transaction) {
             return response()->json([
                 'status' => false,
                 'message' => 'Transaction not found',
                 'data' => null
             ], 404);
+        }
+
+        if ($request->has('type')) $transaction->type = $request->type;
+        if ($request->has('amount')) $transaction->amount = $request->amount;
+        if ($request->has('description')) $transaction->description = $request->description;
+
+        if ($transaction->save()) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Transaction updated successfully',
+                'data' => $transaction->id
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to update transaction',
+                'data' => null
+            ]);
         }
     }
 }
