@@ -11,12 +11,11 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('logout', [AuthController::class, 'logout']);
     Route::get('profile', [ProfileController::class, 'index']);
-    Route::post('update', [ProfileController::class, 'update']);
-    
+    Route::put('profile', [ProfileController::class, 'update']);
     Route::post('transaction', [FinancialRecordController::class, 'store']);
     Route::post('transaction/{id}', [FinancialRecordController::class, 'update']);
-    
     Route::get('users/transactions', [UserController::class, 'list']);
 });
 
